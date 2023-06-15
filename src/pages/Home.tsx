@@ -6,10 +6,6 @@ import { useNavigate } from "react-router-dom"
 const Home = ()=>{
     const router = useNavigate()
 
-    function toButton(){
-        router("/button")
-    }
-
     return (
         <>
             <div className="grid place-content-center h-screen text-center text-lg">
@@ -29,7 +25,16 @@ const Home = ()=>{
                 <p className="opacity-40">
                     Click on the Vite and React logos to learn more
                 </p>
-                <button onClick={toButton} className="bg-blue-400 p-4 text-lg my-2 rounded-md text-white">Redirect to Button</button>
+                <button 
+                    onClick={() => router("/button")} 
+                    className="bg-blue-400 p-4 text-lg my-2 rounded-md text-white"
+                >Redirect to Button
+                </button>
+                <button
+                    onClick={() => router("/network-unit-converter")}
+                    className="bg-green-400 p-4 text-lg my-2 rounded-md text-white"
+                >Redirect to Network Unit Converter
+                </button>
             </div>
         </>
     )
