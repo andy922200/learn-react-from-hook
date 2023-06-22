@@ -35,6 +35,11 @@ const Home = ()=>{
                     className="bg-green-400 p-4 text-lg my-2 rounded-md text-white"
                 >Redirect to Network Unit Converter
                 </button>
+                <button
+                    onClick={() => router("/realtime-weather")}
+                    className="bg-red-400 p-4 text-lg my-2 rounded-md text-white"
+                >Redirect to RealtimeWeather
+                </button>
             </div>
         </>
     )

@@ -46,19 +46,6 @@ module.exports = {
         "@typescript-eslint/no-non-null-assertion": "off",
         "import/no-unresolved": 1,
         "import/prefer-default-export": "off",
-        "import/no-extraneous-dependencies": [
-            1, 
-            { 
-                devDependencies: [
-                    "test/**/*",
-                    "tests/**/*",
-                    "**/__tests__/**",
-                    "**/*.test.{js,jsx}",
-                    "**/*.test.jsx",
-                    "src/utils/fontAwesome.ts"
-                ]
-            }
-        ],
         "@typescript-eslint/no-use-before-define": 0,
         "no-use-before-define": 0,
         "@typescript-eslint/no-var-requires": 0,
