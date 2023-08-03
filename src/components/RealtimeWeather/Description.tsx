@@ -2,7 +2,7 @@ import styled from "@emotion/styled"
 
 const Description = styled.div`
   font-size: 16px;
-  color: #828282;
+  color: ${({ theme }) => theme.textColor };;
   margin-bottom: 30px;
 `;
 

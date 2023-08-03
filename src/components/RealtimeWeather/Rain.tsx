@@ -5,7 +5,7 @@ const Rain = styled.div`
   align-items: center;
   font-size: 16x;
   font-weight: 300;
-  color: #828282;
+  color: ${({ theme }) => theme.textColor };;
   svg{
     width: 25px;
     height: auto;

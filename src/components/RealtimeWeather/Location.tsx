@@ -2,7 +2,7 @@ import styled from "@emotion/styled"
 
 const Location = styled.div`
     font-size: 28px;
-    color: #212121;
+    color: ${({ theme }) => theme.titleColor };;
     margin-bottom: 20px;
 `
 

@@ -5,7 +5,7 @@ const AirFlow = styled.div`
   align-items: center;
   font-size: 16x;
   font-weight: 300;
-  color: #828282;
+  color: ${( { theme }) => theme.textColor };
   margin-bottom: 20px;
   svg{
     width: 25px;

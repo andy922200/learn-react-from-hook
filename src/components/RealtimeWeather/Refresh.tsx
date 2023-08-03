@@ -7,7 +7,7 @@ const Refresh = styled.div`
   font-size: 12px;
   display: inline-flex;
   align-items: flex-end;
-  color: #828282;
+  color: ${({theme}) => theme.textColor };;
   svg{
     margin-left: 10px;
     width: 15px;
