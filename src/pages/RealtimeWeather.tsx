@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import styled from "@emotion/styled"
 import {
     AirFlow, Celsius, CurrentWeather, Description, Location, Rain, Refresh, Temperature
@@ -9,6 +9,8 @@ import { ReactComponent as RainIcon } from "@/assets/images/rain.svg"
 import { ReactComponent as RefreshIcon } from "@/assets/images/refresh.svg"
 import { ThemeProvider } from "@emotion/react"
 import { ThemeMode, ThemeModeType } from "@/enum"
+import dayjs from "dayjs"
+import { fetchCurrentLocationWeather } from "@/api/weather"
 
 interface SwitchModeBtnProps {
     currentTheme: ThemeModeType;
@@ -76,29 +78,70 @@ const SwitchModeBtn = ({currentTheme, setCurrentTheme}: SwitchModeBtnProps) => {
 }
 
 const RealtimeWeather = () => {
-    const [ currentTheme, setCurrentTheme] = useState(ThemeMode.LIGHT)
-    
+    const [ currentTheme, setCurrentTheme ] = useState(ThemeMode.LIGHT)
+    const [ currentWeather, setCurrentWeather ] = useState({
+        locationName: "",
+        description: "多雲時晴",
+        windSpeed: 0,
+        temperature: 0,
+        rainPossibility: 48.6,
+        observationTime: "2000-01-01 00:00:00",
+    })
+
+    const fetchData = useCallback(async(locationName: string)=>{
+        try{
+            const res = await fetchCurrentLocationWeather(locationName)
+
+            if(res?.success === "true"){
+                const {locationName, time, weatherElement } = res.records.location[0]
+                const weatherElements = weatherElement.reduce((acc:Record<string, any>, cur: Record<string, any>)=>{
+                    if(["WDSD", "TEMP"].includes(cur.elementName)){
+                        acc[cur.elementName] = cur.elementValue
+                    }
+                    return acc
+                }, {})
+
+                setCurrentWeather(preWeather =>({
+                    ...preWeather,
+                    locationName,
+                    windSpeed: weatherElements.WDSD,
+                    temperature: weatherElements.TEMP,
+                    observationTime: time.obsTime,
+                }))
+            }
+        }catch(err){
+            console.log(err)
+        }
+    }, [])
+
+    useEffect(()=>{
+        fetchData("臺北")
+    },[ fetchData ])
+
     return (
         <ThemeProvider theme={theme[currentTheme]}>
             <SwitchModeBtn currentTheme={currentTheme} setCurrentTheme={setCurrentTheme} />
             <Container>
                 <WeatherCard>
-                    <Location>台北市</Location>
-                    <Description>多雲時晴</Description>
+                    <Location>{currentWeather.locationName}</Location>
+                    <Description>{currentWeather.description}</Description>
                     <CurrentWeather>
                         <Temperature>
-                            23 <Celsius>°C</Celsius>
+                            { Math.round(currentWeather.temperature)} <Celsius>°C</Celsius>
                         </Temperature>
                         <DayCloudy/>
                     </CurrentWeather>
                     <AirFlow> 
-                        <AirFlowIcon /> 23 m/h 
+                        <AirFlowIcon /> { currentWeather.temperature } m/h 
                     </AirFlow>
                     <Rain> 
-                        <RainIcon /> 48% 
+                        <RainIcon /> {currentWeather.rainPossibility}% 
                     </Rain>
-                    <Refresh> 
-                        最後觀測時間：上午 12:03 <RefreshIcon />
+                    <Refresh onClick={() => fetchData(currentWeather.locationName)}> 
+                        最後觀測時間： { new Intl.DateTimeFormat("zh-tw",{
+                            hour: "numeric",
+                            minute: "numeric",
+                        }).format(dayjs(currentWeather.observationTime).toDate())} <RefreshIcon />
                     </Refresh>
                 </WeatherCard>
             </Container>
