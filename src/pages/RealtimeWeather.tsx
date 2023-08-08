@@ -1,3 +1,4 @@
+import { useState } from "react"
 import styled from "@emotion/styled"
 import {
     AirFlow, Celsius, CurrentWeather, Description, Location, Rain, Refresh, Temperature
@@ -7,6 +8,12 @@ import { ReactComponent as AirFlowIcon } from "@/assets/images/airFlow.svg"
 import { ReactComponent as RainIcon } from "@/assets/images/rain.svg"
 import { ReactComponent as RefreshIcon } from "@/assets/images/refresh.svg"
 import { ThemeProvider } from "@emotion/react"
+import { ThemeMode, ThemeModeType } from "@/enum"
+
+interface SwitchModeBtnProps {
+    currentTheme: ThemeModeType;
+    setCurrentTheme: (value: ThemeModeType) => void;
+}
 
 const theme = {
     light: {
@@ -49,9 +56,31 @@ const DayCloudy = styled(DayCloudyIcon)`
     flex-basis: 30%;
 `
 
-const RealtimeWeather = () => {
+const StyledSwitchModeBtn = styled.button`
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+`
+
+const SwitchModeBtn = ({currentTheme, setCurrentTheme}: SwitchModeBtnProps) => {
     return (
-        <ThemeProvider theme={theme.dark}>
+        <StyledSwitchModeBtn onClick={()=> setCurrentTheme(currentTheme === ThemeMode.DARK ? ThemeMode.LIGHT : ThemeMode.DARK)}>切換模式</StyledSwitchModeBtn>
+    )
+}
+
+const RealtimeWeather = () => {
+    const [ currentTheme, setCurrentTheme] = useState(ThemeMode.LIGHT)
+    
+    return (
+        <ThemeProvider theme={theme[currentTheme]}>
+            <SwitchModeBtn currentTheme={currentTheme} setCurrentTheme={setCurrentTheme} />
             <Container>
                 <WeatherCard>
                     <Location>台北市</Location>
