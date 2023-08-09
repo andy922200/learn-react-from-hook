@@ -1,15 +1,14 @@
 import { useState, useEffect, useCallback } from "react"
 import styled from "@emotion/styled"
 import {
-    AirFlow, Celsius, CurrentWeather, Description, Location, Rain, Refresh, Temperature, SwitchModeBtn
+    AirFlow, Celsius, CurrentWeather, Description, Location, Rain, Refresh, Temperature, SwitchModeBtn, WeatherIcon
 } from "@/components/RealtimeWeather/"
-import { ReactComponent as DayCloudyIcon } from "@/assets/images/day-cloudy.svg"
 import { ReactComponent as AirFlowIcon } from "@/assets/images/airFlow.svg"
 import { ReactComponent as RainIcon } from "@/assets/images/rain.svg"
 import { ReactComponent as RefreshIcon } from "@/assets/images/refresh.svg"
 import { ReactComponent as LoadingIcon } from "@/assets/images/loading.svg"
 import { ThemeProvider } from "@emotion/react"
-import { ThemeMode } from "@/enum"
+import { ThemeMode, Moment } from "@/enum"
 import dayjs from "dayjs"
 import { fetchLocationWeather, fetchWeatherForecast } from "@/api/weather"
 import { LocationWeatherResponse, WeatherForecastResponse } from "@/types/weather"
@@ -49,10 +48,6 @@ const WeatherCard = styled.div`
     background-color: ${({ theme }) => theme.foregroundColor};
     box-sizing: border-box;
     padding: 30px 15px;
-`
-
-const DayCloudy = styled(DayCloudyIcon)`
-    flex-basis: 30%;
 `
 
 interface IWeatherElement {
@@ -120,7 +115,7 @@ const RealtimeWeather = () => {
         isLoading: false
     })
 
-    const { locationName, locationNameForecast, description, windSpeed, temperature, rainPossibility, observationTime, comfortability, isLoading } = weatherElement
+    const { locationName, weatherCode, locationNameForecast, description, windSpeed, temperature, rainPossibility, observationTime, comfortability, isLoading } = weatherElement
 
     const fetchData = useCallback(async(locationName: string, locationNameForecast: string)=>{
         try{
@@ -176,7 +171,7 @@ const RealtimeWeather = () => {
                         <Temperature>
                             { Math.round(temperature)} <Celsius>°C</Celsius>
                         </Temperature>
-                        <DayCloudy/>
+                        <WeatherIcon weatherCode={weatherCode} moment={Moment.DAY}/>
                     </CurrentWeather>
                     <AirFlow> 
                         <AirFlowIcon /> { windSpeed } m/h 
