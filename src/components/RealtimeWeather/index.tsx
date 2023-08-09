@@ -8,5 +8,6 @@ import Refresh from "./Refresh";
 import Temperature from "./Temperature";
 import SwitchModeBtn from "./SwitchModeBtn";
 import WeatherIcon from "./WeatherIcon";
+import WeatherCard from "./WeatherCard"
 
-export { AirFlow, Celsius, CurrentWeather, Description, Location, Rain, Refresh, Temperature, SwitchModeBtn, WeatherIcon };
+export { AirFlow, Celsius, CurrentWeather, Description, Location, Rain, Refresh, Temperature, SwitchModeBtn, WeatherIcon, WeatherCard };

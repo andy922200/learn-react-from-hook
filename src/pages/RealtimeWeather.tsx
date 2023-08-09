@@ -1,17 +1,11 @@
 import { useState, useEffect, useCallback } from "react"
 import styled from "@emotion/styled"
-import {
-    AirFlow, Celsius, CurrentWeather, Description, Location, Rain, Refresh, Temperature, SwitchModeBtn, WeatherIcon
-} from "@/components/RealtimeWeather/"
-import { ReactComponent as AirFlowIcon } from "@/assets/images/airFlow.svg"
-import { ReactComponent as RainIcon } from "@/assets/images/rain.svg"
-import { ReactComponent as RefreshIcon } from "@/assets/images/refresh.svg"
-import { ReactComponent as LoadingIcon } from "@/assets/images/loading.svg"
-import { ThemeProvider } from "@emotion/react"
-import { ThemeMode, Moment } from "@/enum"
 import dayjs from "dayjs"
-import { fetchLocationWeather, fetchWeatherForecast } from "@/api/weather"
-import { LocationWeatherResponse, WeatherForecastResponse } from "@/types/weather"
+import { WeatherCard, SwitchModeBtn } from "@/components/RealtimeWeather/"
+import { ThemeProvider } from "@emotion/react"
+import { ThemeMode, Moment, MomentType } from "@/enum"
+import { fetchLocationWeather, fetchWeatherForecast, fetchSunriseSunset } from "@/api/weather"
+import { LocationWeatherResponse, WeatherForecastResponse, SunTimeResponse } from "@/types/weather"
 
 const theme = {
     light: {
@@ -41,25 +35,22 @@ const Container = styled.div`
     justify-content: center;
 `
 
-const WeatherCard = styled.div`
-    position: relative;
-    min-width: 360px;
-    box-shadow: ${({ theme }) => theme.boxShadow};
-    background-color: ${({ theme }) => theme.foregroundColor};
-    box-sizing: border-box;
-    padding: 30px 15px;
-`
-
-interface IWeatherElement {
+export interface IWeatherElement {
     locationName: string,
     locationNameForecast: string,
+    latitude: string,
+    longitude: string,
+    moment: MomentType,
+    sunrise: Date,
+    sunset: Date,
     description: string,
     windSpeed: number,
     temperature: number,
     rainPossibility: number,
     observationTime: string,
     comfortability: string,
-    weatherCode: string
+    weatherCode: string,
+    isLoading: boolean
 }
 
 const parseLocationWeather = (rawData: LocationWeatherResponse | undefined):Partial<IWeatherElement | undefined> =>{
@@ -78,6 +69,16 @@ const parseLocationWeather = (rawData: LocationWeatherResponse | undefined):Part
         windSpeed: weatherElements.WDSD,
         temperature: weatherElements.TEMP,
         observationTime: time.obsTime
+    }
+}
+
+const parseSunriseSunsetRes = (rawData: SunTimeResponse | undefined):Partial<IWeatherElement | undefined>  =>{
+    if(!rawData?.results) return undefined
+
+    return {
+        sunrise: dayjs(rawData.results.sunrise).toDate(),
+        sunset: dayjs(rawData.results.sunset).toDate(),
+        moment: dayjs().isAfter(dayjs(rawData.results.sunrise)) && dayjs().isBefore(dayjs(rawData.results.sunset)) ? Moment.DAY : Moment.NIGHT
     }
 }
 
@@ -105,6 +106,11 @@ const RealtimeWeather = () => {
     const [ weatherElement, setWeatherElement ] = useState({
         locationName: "",
         locationNameForecast: "",
+        latitude: "",
+        longitude: "",
+        moment: Moment.DAY,
+        sunrise: new Date(),
+        sunset: new Date(),
         description: "",
         windSpeed: 0,
         temperature: 0,
@@ -115,22 +121,22 @@ const RealtimeWeather = () => {
         isLoading: false
     })
 
-    const { locationName, weatherCode, locationNameForecast, description, windSpeed, temperature, rainPossibility, observationTime, comfortability, isLoading } = weatherElement
-
-    const fetchData = useCallback(async(locationName: string, locationNameForecast: string)=>{
+    const fetchData = useCallback(async({locationName, locationNameForecast, latitude, longitude}:{locationName: string, locationNameForecast: string, latitude: string, longitude: string})=>{
         try{
             setWeatherElement(prevState =>({
                 ...prevState,
                 isLoading: true
             }))
 
-            const [ locationWeatherRes, weatherForecastRes ] = await Promise.all([
+            const [ locationWeatherRes, weatherForecastRes, sunriseSunsetRes ] = await Promise.all([
                 fetchLocationWeather(locationName),
-                fetchWeatherForecast(locationNameForecast)
+                fetchWeatherForecast(locationNameForecast),
+                fetchSunriseSunset(latitude, longitude)
             ])
 
             const locationWeather = parseLocationWeather(locationWeatherRes)
             const weatherForecast = parseWeatherForecast(weatherForecastRes)
+            const sunriseSunset = parseSunriseSunsetRes(sunriseSunsetRes)
 
             setWeatherElement(prevState =>({
                 ...prevState,
@@ -143,7 +149,10 @@ const RealtimeWeather = () => {
                     description: weatherForecast?.description || "",
                     rainPossibility: weatherForecast?.rainPossibility || 0,
                     weatherCode: weatherForecast?.weatherCode || "",
-                    comfortability: weatherForecast?.comfortability || ""
+                    comfortability: weatherForecast?.comfortability || "",
+                    sunrise: sunriseSunset?.sunrise || new Date(),
+                    sunset: sunriseSunset?.sunset || new Date(),
+                    moment: sunriseSunset?.moment || Moment.DAY,
                 }
             }))
         }catch(err){
@@ -157,36 +166,19 @@ const RealtimeWeather = () => {
     }, [])
 
     useEffect(()=>{
-        fetchData("臺北", "臺北市")
+        fetchData({
+            locationName: "臺北", 
+            locationNameForecast: "臺北市", 
+            latitude: "25.09108", 
+            longitude:  "121.5598"
+        })
     },[ fetchData ])
 
     return (
         <ThemeProvider theme={theme[currentTheme]}>
             <SwitchModeBtn currentTheme={currentTheme} setCurrentTheme={setCurrentTheme} />
             <Container>
-                <WeatherCard>
-                    <Location>{locationName}</Location>
-                    <Description>{description}{comfortability}</Description>
-                    <CurrentWeather>
-                        <Temperature>
-                            { Math.round(temperature)} <Celsius>°C</Celsius>
-                        </Temperature>
-                        <WeatherIcon weatherCode={weatherCode} moment={Moment.DAY}/>
-                    </CurrentWeather>
-                    <AirFlow> 
-                        <AirFlowIcon /> { windSpeed } m/h 
-                    </AirFlow>
-                    <Rain> 
-                        <RainIcon /> {rainPossibility}% 
-                    </Rain>
-                    <Refresh onClick={() => fetchData(locationName, locationNameForecast)} isLoading={isLoading}> 
-                        最後觀測時間： { new Intl.DateTimeFormat("zh-tw",{
-                            hour: "numeric",
-                            minute: "numeric",
-                        }).format(dayjs(observationTime).toDate())} 
-                        { isLoading ? <LoadingIcon />: <RefreshIcon />}
-                    </Refresh>
-                </WeatherCard>
+                <WeatherCard weatherElement={weatherElement} fetchData={fetchData} />
             </Container>
         </ThemeProvider>
     )

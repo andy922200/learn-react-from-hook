@@ -83,8 +83,8 @@ const WeatherIcon = ({weatherCode, moment}: { weatherCode: string, moment: Momen
         Object.entries(weatherTypes).forEach(([, weatherTypeItem]) => {
             const found = weatherTypeItem.codes.find((code)=> code === Number(weatherCode))
     
-            if(found){
-                foundIcon = weatherTypeItem.icon[moment]
+            if(found && moment){
+                foundIcon = weatherTypeItem.icon?.[moment]
             }
         })
 
