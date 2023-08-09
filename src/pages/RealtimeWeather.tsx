@@ -1,21 +1,18 @@
 import { useState, useEffect, useCallback } from "react"
 import styled from "@emotion/styled"
 import {
-    AirFlow, Celsius, CurrentWeather, Description, Location, Rain, Refresh, Temperature
+    AirFlow, Celsius, CurrentWeather, Description, Location, Rain, Refresh, Temperature, SwitchModeBtn
 } from "@/components/RealtimeWeather/"
 import { ReactComponent as DayCloudyIcon } from "@/assets/images/day-cloudy.svg"
 import { ReactComponent as AirFlowIcon } from "@/assets/images/airFlow.svg"
 import { ReactComponent as RainIcon } from "@/assets/images/rain.svg"
 import { ReactComponent as RefreshIcon } from "@/assets/images/refresh.svg"
+import { ReactComponent as LoadingIcon } from "@/assets/images/loading.svg"
 import { ThemeProvider } from "@emotion/react"
-import { ThemeMode, ThemeModeType } from "@/enum"
+import { ThemeMode } from "@/enum"
 import dayjs from "dayjs"
-import { fetchCurrentLocationWeather } from "@/api/weather"
-
-interface SwitchModeBtnProps {
-    currentTheme: ThemeModeType;
-    setCurrentTheme: (value: ThemeModeType) => void;
-}
+import { fetchLocationWeather, fetchWeatherForecast } from "@/api/weather"
+import { LocationWeatherResponse, WeatherForecastResponse } from "@/types/weather"
 
 const theme = {
     light: {
@@ -58,64 +55,114 @@ const DayCloudy = styled(DayCloudyIcon)`
     flex-basis: 30%;
 `
 
-const StyledSwitchModeBtn = styled.button`
-    background-color: #4CAF50;
-    border: none;
-    color: white;
-    padding: 15px 32px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    margin: 4px 2px;
-    cursor: pointer;
-`
+interface IWeatherElement {
+    locationName: string,
+    locationNameForecast: string,
+    description: string,
+    windSpeed: number,
+    temperature: number,
+    rainPossibility: number,
+    observationTime: string,
+    comfortability: string,
+    weatherCode: string
+}
 
-const SwitchModeBtn = ({currentTheme, setCurrentTheme}: SwitchModeBtnProps) => {
-    return (
-        <StyledSwitchModeBtn onClick={()=> setCurrentTheme(currentTheme === ThemeMode.DARK ? ThemeMode.LIGHT : ThemeMode.DARK)}>切換模式</StyledSwitchModeBtn>
-    )
+const parseLocationWeather = (rawData: LocationWeatherResponse | undefined):Partial<IWeatherElement | undefined> =>{
+    if(!rawData?.records.location[0]) return undefined
+
+    const { locationName, time, weatherElement }  = rawData.records.location[0]
+    const weatherElements = weatherElement.reduce((acc:Record<string, any>, cur: Record<string, any>)=>{
+        if(["WDSD", "TEMP"].includes(cur.elementName)){
+            acc[cur.elementName] = cur.elementValue
+        }
+        return acc
+    }, {})
+
+    return {
+        locationName,
+        windSpeed: weatherElements.WDSD,
+        temperature: weatherElements.TEMP,
+        observationTime: time.obsTime
+    }
+}
+
+const parseWeatherForecast = (rawData: WeatherForecastResponse | undefined):Partial<IWeatherElement | undefined> =>{
+    if(!rawData?.records.location[0]) return undefined
+
+    const { weatherElement } = rawData.records.location[0]
+    const weatherElements = weatherElement.reduce((acc: Record<string, any>, cur: Record<string, any>)=>{
+        if(["Wx", "PoP", "CI"].includes(cur.elementName)){
+            acc[cur.elementName] = cur.time[0].parameter
+        }
+        return acc
+    }, {})
+
+    return {
+        description: weatherElements.Wx.parameterName,
+        weatherCode: weatherElements.Wx.parameterValue,
+        rainPossibility: weatherElements.PoP.parameterName,
+        comfortability: weatherElements.CI.parameterName,
+    }
 }
 
 const RealtimeWeather = () => {
     const [ currentTheme, setCurrentTheme ] = useState(ThemeMode.LIGHT)
-    const [ currentWeather, setCurrentWeather ] = useState({
+    const [ weatherElement, setWeatherElement ] = useState({
         locationName: "",
-        description: "多雲時晴",
+        locationNameForecast: "",
+        description: "",
         windSpeed: 0,
         temperature: 0,
-        rainPossibility: 48.6,
+        rainPossibility: 0,
         observationTime: "2000-01-01 00:00:00",
+        comfortability: "",
+        weatherCode: "",
+        isLoading: false
     })
 
-    const fetchData = useCallback(async(locationName: string)=>{
+    const { locationName, locationNameForecast, description, windSpeed, temperature, rainPossibility, observationTime, comfortability, isLoading } = weatherElement
+
+    const fetchData = useCallback(async(locationName: string, locationNameForecast: string)=>{
         try{
-            const res = await fetchCurrentLocationWeather(locationName)
+            setWeatherElement(prevState =>({
+                ...prevState,
+                isLoading: true
+            }))
 
-            if(res?.success === "true"){
-                const {locationName, time, weatherElement } = res.records.location[0]
-                const weatherElements = weatherElement.reduce((acc:Record<string, any>, cur: Record<string, any>)=>{
-                    if(["WDSD", "TEMP"].includes(cur.elementName)){
-                        acc[cur.elementName] = cur.elementValue
-                    }
-                    return acc
-                }, {})
+            const [ locationWeatherRes, weatherForecastRes ] = await Promise.all([
+                fetchLocationWeather(locationName),
+                fetchWeatherForecast(locationNameForecast)
+            ])
 
-                setCurrentWeather(preWeather =>({
-                    ...preWeather,
+            const locationWeather = parseLocationWeather(locationWeatherRes)
+            const weatherForecast = parseWeatherForecast(weatherForecastRes)
+
+            setWeatherElement(prevState =>({
+                ...prevState,
+                ... {
                     locationName,
-                    windSpeed: weatherElements.WDSD,
-                    temperature: weatherElements.TEMP,
-                    observationTime: time.obsTime,
-                }))
-            }
+                    locationNameForecast,
+                    windSpeed: locationWeather?.windSpeed || 0,
+                    temperature: locationWeather?.temperature || 0,
+                    observationTime: locationWeather?.observationTime || "",
+                    description: weatherForecast?.description || "",
+                    rainPossibility: weatherForecast?.rainPossibility || 0,
+                    weatherCode: weatherForecast?.weatherCode || "",
+                    comfortability: weatherForecast?.comfortability || ""
+                }
+            }))
         }catch(err){
             console.log(err)
+        }finally{
+            setWeatherElement(prevState =>({
+                ...prevState,
+                isLoading: false
+            }))
         }
     }, [])
 
     useEffect(()=>{
-        fetchData("臺北")
+        fetchData("臺北", "臺北市")
     },[ fetchData ])
 
     return (
@@ -123,25 +170,26 @@ const RealtimeWeather = () => {
             <SwitchModeBtn currentTheme={currentTheme} setCurrentTheme={setCurrentTheme} />
             <Container>
                 <WeatherCard>
-                    <Location>{currentWeather.locationName}</Location>
-                    <Description>{currentWeather.description}</Description>
+                    <Location>{locationName}</Location>
+                    <Description>{description}{comfortability}</Description>
                     <CurrentWeather>
                         <Temperature>
-                            { Math.round(currentWeather.temperature)} <Celsius>°C</Celsius>
+                            { Math.round(temperature)} <Celsius>°C</Celsius>
                         </Temperature>
                         <DayCloudy/>
                     </CurrentWeather>
                     <AirFlow> 
-                        <AirFlowIcon /> { currentWeather.temperature } m/h 
+                        <AirFlowIcon /> { windSpeed } m/h 
                     </AirFlow>
                     <Rain> 
-                        <RainIcon /> {currentWeather.rainPossibility}% 
+                        <RainIcon /> {rainPossibility}% 
                     </Rain>
-                    <Refresh onClick={() => fetchData(currentWeather.locationName)}> 
+                    <Refresh onClick={() => fetchData(locationName, locationNameForecast)} isLoading={isLoading}> 
                         最後觀測時間： { new Intl.DateTimeFormat("zh-tw",{
                             hour: "numeric",
                             minute: "numeric",
-                        }).format(dayjs(currentWeather.observationTime).toDate())} <RefreshIcon />
+                        }).format(dayjs(observationTime).toDate())} 
+                        { isLoading ? <LoadingIcon />: <RefreshIcon />}
                     </Refresh>
                 </WeatherCard>
             </Container>

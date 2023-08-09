@@ -1,4 +1,4 @@
-export interface CurrentLocationWeatherResponse {
+interface WeatherResponseCore {
     success: string;
     result: {
         resource_id: string;
@@ -9,6 +9,9 @@ export interface CurrentLocationWeatherResponse {
     };
     records: {
         datasetDescription: string;
-        location: any[];
+        location: Record<string, any>[];
     };
 }
+
+export type LocationWeatherResponse = WeatherResponseCore
+export type WeatherForecastResponse = WeatherResponseCore

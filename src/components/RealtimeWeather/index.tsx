@@ -6,5 +6,6 @@ import Location from "./Location";
 import Rain from "./Rain";
 import Refresh from "./Refresh";
 import Temperature from "./Temperature";
+import SwitchModeBtn from "./SwitchModeBtn";
 
-export { AirFlow, Celsius, CurrentWeather, Description, Location, Rain, Refresh, Temperature };
+export { AirFlow, Celsius, CurrentWeather, Description, Location, Rain, Refresh, Temperature, SwitchModeBtn };
