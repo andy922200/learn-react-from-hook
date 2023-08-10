@@ -1,8 +1,9 @@
 {
-  "name": "vite-react-typescript-tailwindcss",
+  "name": "learn-react-from-hook",
   "private": true,
   "version": "1.0.0",
   "type": "module",
+  "homepage": "https://andy922200.github.io/learn-react-from-hook",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
@@ -10,7 +11,8 @@
     "lint": "eslint src/**/*.{ts,tsx} --max-warnings=0",
     "lint-fix": "eslint src/**/*.{ts,tsx} --fix",
     "lint-css": "stylelint ./**/*.{css} --allow-empty-input",
-    "typecheck": "tsc --project tsconfig.json --noEmit"
+    "typecheck": "tsc --project tsconfig.json --noEmit",
+    "deploy": "yarn build && gh-pages -d dist"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "1.2.36",
@@ -19,6 +21,7 @@
     "@fortawesome/free-solid-svg-icons": "5.15.4",
     "@fortawesome/react-fontawesome": "^0.2.0",
     "dayjs": "^1.11.9",
+    "gh-pages": "^5.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.13.0",

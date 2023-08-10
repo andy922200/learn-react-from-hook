@@ -13,6 +13,7 @@ export default defineConfig({
             exclude: "/*.svg",
         })
     ],
+    base: "/learn-react-from-hook/",
     server: {
         port: 3000
     }

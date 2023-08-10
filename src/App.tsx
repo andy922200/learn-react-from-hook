@@ -6,7 +6,7 @@ import "./App.css"
 
 function App() {
     return (
-        <Suspense fallback={<p>Fallback 404 Error</p>}>
+        <Suspense fallback={<div>Loading...</div>}>
             <RouterProvider router={router}></RouterProvider>
         </Suspense>
     )
