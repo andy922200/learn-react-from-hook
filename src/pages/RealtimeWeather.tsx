@@ -1,8 +1,10 @@
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import styled from "@emotion/styled"
-import { WeatherCard, SwitchModeBtn } from "@/components/RealtimeWeather/"
+import { WeatherCard, WeatherSetting, SwitchModeBtn } from "@/components/RealtimeWeather/"
 import { ThemeProvider } from "@emotion/react"
 import { ThemeMode, MomentType } from "@/enum"
+import { data } from "@/utils/location-latitude-longitude.json";
+import { findLocation } from "@/utils/mixin"
 import useWeatherAPI from "@/hooks/useWeatherAPI"
 
 const theme = {
@@ -52,19 +54,42 @@ export interface IWeatherElement {
 }
 
 const RealtimeWeather = () => {
+    const [ currentPage, setCurrentPage ] = useState("WeatherCard")
     const [ currentTheme, setCurrentTheme ] = useState(ThemeMode.LIGHT)
-    const [weatherElement, fetchData ] = useWeatherAPI({
-        locationName: "臺北",
-        locationNameForecast: "臺北市",
-        latitude: "25.09108",
-        longitude: "121.5598"
+    const [ currentLocation, setCurrentLocation ] = useState(localStorage.getItem("cityName") || "臺北市")
+
+    const foundedLocation = useMemo(()=>{
+        return findLocation(currentLocation, data)
+    }, [currentLocation])
+    
+    const [ weatherElement, fetchData ] = useWeatherAPI({
+        locationName: foundedLocation?.locationName,
+        locationNameForecast: foundedLocation?.locationNameForecast,
+        latitude: foundedLocation?.latitude,
+        longitude: foundedLocation?.longitude,
     })
 
     return (
         <ThemeProvider theme={theme[currentTheme]}>
-            <SwitchModeBtn currentTheme={currentTheme} setCurrentTheme={setCurrentTheme} />
+            <SwitchModeBtn
+                currentTheme={currentTheme}
+                setCurrentTheme={setCurrentTheme} />
             <Container>
-                <WeatherCard weatherElement={weatherElement} fetchData={fetchData} />
+                { 
+                    currentPage === "WeatherCard" && 
+                    <WeatherCard 
+                        weatherElement={weatherElement} 
+                        fetchData={fetchData} 
+                        setCurrentPage={setCurrentPage}
+                    />
+                }
+                {   currentPage === "WeatherSetting" && 
+                    <WeatherSetting 
+                        locationNameForecast={foundedLocation?.locationNameForecast}
+                        setCurrentLocation={setCurrentLocation}
+                        setCurrentPage={setCurrentPage}
+                    />
+                }
             </Container>
         </ThemeProvider>
     )
