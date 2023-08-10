@@ -8,9 +8,10 @@ const Button = ()=>{
             <button onClick={() => setCount((count) => count + 1)}>
                 count is {count}
             </button>
-            <p style={{
-                visibility: count >= 9 ? "visible" : "hidden"
-            }}>
+            <p
+                style={{
+                    visibility: count >= 9 ? "visible" : "hidden"
+                }}>
                 Edit Button and save to test HMR
             </p>
         </div>

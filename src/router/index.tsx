@@ -9,7 +9,9 @@ const RealtimeWeather = lazy(() => import("@/pages/RealtimeWeather"))
 export default createHashRouter([
     {
         path: "/",
-        element: <Navigate replace to="/index" />
+        element: <Navigate
+            replace
+            to="/index" />
     },
     {
         path: "/index",
