@@ -18,22 +18,10 @@ const WeatherCardStyle = styled.div`
     padding: 30px 15px;
 `
 
-const WeatherCard = ({
-    weatherElement,
-    fetchData
-}: {
-    weatherElement: IWeatherElement,
-    fetchData: ({ locationName, locationNameForecast, latitude, longitude }: {
-      locationName: string;
-      locationNameForecast: string;
-      latitude: string;
-      longitude: string;
-    }) => Promise<void>
-  }) => {
+const WeatherCard = ({weatherElement,fetchData}:{weatherElement: IWeatherElement, fetchData: () => void}) => {
     const {
         locationName,
         weatherCode,
-        locationNameForecast,
         description,
         windSpeed,
         temperature,
@@ -41,8 +29,6 @@ const WeatherCard = ({
         observationTime,
         comfortability,
         isLoading,
-        latitude,
-        longitude,
         moment
     } = weatherElement
   
@@ -62,7 +48,7 @@ const WeatherCard = ({
             <Rain>
                 <RainIcon /> {rainPossibility}%
             </Rain>
-            <Refresh onClick={() => fetchData({ locationName, locationNameForecast, latitude, longitude })} isLoading={isLoading}>
+            <Refresh onClick={() => fetchData()} isLoading={isLoading}>
                 最後觀測時間： {new Intl.DateTimeFormat("zh-tw", {
                     hour: "numeric",
                     minute: "numeric",
