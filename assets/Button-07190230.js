@@ -1,0 +1,1 @@
+import{r as i,j as t}from"./index-461ae849.js";const r=()=>{const[s,e]=i.useState(0);return t.jsxs("div",{className:"button-wrapper",children:[t.jsxs("button",{onClick:()=>e(n=>n+1),children:["count is ",s]}),t.jsx("p",{style:{visibility:s>=9?"visible":"hidden"},children:"Edit Button and save to test HMR"})]})};export{r as default};
