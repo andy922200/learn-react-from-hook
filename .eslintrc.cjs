@@ -55,6 +55,7 @@ module.exports = {
         "react/jsx-max-props-per-line": ["error", { "maximum": 1 }],
         "react/jsx-first-prop-new-line": ["error", "multiline"],
         "react/jsx-closing-tag-location": "error",
+        "react/jsx-closing-bracket-location": [1, "tag-aligned"],
         "import/extensions": [
             "error",
             "ignorePackages",

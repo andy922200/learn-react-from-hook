@@ -11,7 +11,8 @@ const Button = ()=>{
             <p
                 style={{
                     visibility: count >= 9 ? "visible" : "hidden"
-                }}>
+                }}
+            >
                 Edit Button and save to test HMR
             </p>
         </div>

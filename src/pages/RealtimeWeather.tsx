@@ -73,7 +73,8 @@ const RealtimeWeather = () => {
         <ThemeProvider theme={theme[currentTheme]}>
             <SwitchModeBtn
                 currentTheme={currentTheme}
-                setCurrentTheme={setCurrentTheme} />
+                setCurrentTheme={setCurrentTheme}
+            />
             <Container>
                 { 
                     currentPage === "WeatherCard" && 

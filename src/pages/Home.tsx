@@ -13,16 +13,19 @@ const Home = ()=>{
                     <a
                         href="https://vitejs.dev"
                         target="_blank"
-                        rel="noreferrer noopenner">
+                        rel="noreferrer noopenner"
+                    >
                         <img
                             src={viteLogo}
                             className="logo"
-                            alt="Vite logo" />
+                            alt="Vite logo"
+                        />
                     </a>
                     <a
                         href="https://reactjs.org"
                         target="_blank"
-                        rel="noreferrer">
+                        rel="noreferrer"
+                    >
                         <img
                             src={reactLogo}
                             className="w-32 animate-spin [animation-duration:10s]"
